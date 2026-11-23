@@ -1,12 +1,12 @@
-# Nashi
+# MAGU
 
-[English](README.md) · [Türkçe özellikler ve kısayollar](https://orkunisitmak.github.io/nashi-app/tr/) · [Son sürüm](https://github.com/orkunisitmak/nashi-app/releases/latest)
+[English](README.md) · Türkçe özellikler ve kısayollar · MAGU sürümleri GitHub Releases üzerinden yayınlanır.
 
-Nashi, [Tangerine](https://tangerineformac.com/) uygulamasının sürükle ve çark etkileşiminden ilham alan bağımsız, açık kaynaklı bir dosya dönüştürme/düzenleme uygulamasıdır. Web’den medya indirme, QR okuma, geliştirilmiş crop/annotate araçları, klavyeyle medya düzenleme, canlı ilerleme ve imzalı otomatik güncelleme ekler. Tangerine veya LEAP STUDIO ile bağlantılı değildir; referans uygulamanın binary dosyaları veya görselleri dağıtılmaz.
+MAGU, [Tangerine](https://tangerineformac.com/) uygulamasının sürükle ve çark etkileşiminden ilham alan bağımsız, açık kaynaklı bir dosya dönüştürme/düzenleme uygulamasıdır. Web’den medya indirme, QR okuma, geliştirilmiş crop/annotate araçları, klavyeyle medya düzenleme ve canlı ilerleme özellikleri sunar. Tangerine veya LEAP STUDIO ile bağlantılı değildir.
 
 [Etkileşimli web demosunu dene](https://orkunisitmak.github.io/nashi-app/tr/#playground): örnek dosyaları sürükle, wheel ve kısayolları kullan, 27 aracı keşfet. Desteklenen görsel/PDF/ses çıktıları gerçektir; masaüstüne özel işlemler önizleme olarak işaretlenir.
 
-## Nashi’yi iş başında gör
+## MAGU’yu iş başında gör
 
 [![Nashi gerçek ekran kaydı: Finder sürükleme, wheel, dönüştürme, crop ve video trim](docs/assets/showcase/nashi-demo.gif?v=50e9219b2083)](https://orkunisitmak.github.io/nashi-app/tr/#demo)
 
@@ -25,7 +25,7 @@ Windows görüntüsü, [PR #1](https://github.com/orkunisitmak/nashi-app/pull/1)
 ## İndir ve kullan
 
 - **[macOS ZIP · Apple Silicon, macOS 13+](https://github.com/orkunisitmak/nashi-app/releases/latest/download/Nashi-macOS-arm64.zip):** ZIP’i aç, Nashi.app’i Uygulamalar klasörüne taşı ve aç. macOS kataloğu 27 araç, 46 girdi formatı ve 300 dönüşüm yolu içerir.
-- **[Windows x64 ZIP · yerel önizleme](https://github.com/orkunisitmak/nashi-app/releases/latest/download/Nashi-Windows-x64.zip):** ZIP’in tamamını kendine ait, yazılabilir bir klasöre çıkar ve Nashi.exe’yi aç. Ayrıca .NET kurmak gerekmez. Güncelleme için klasörün bütünlüğünü koru. [Windows özellikleri ve farkları](windows/README.md).
+- Windows x64 ZIP ve per-user kurulum paketi, gerçek bir MAGU GitHub Release yayınlandığında bu bölümden duyurulacaktır. Henüz doğrulanmamış indirme bağlantısı kullanılmıyor. [Windows özellikleri ve farkları](windows/README.md).
 
 İlk açılışta **Kurulumu tamamla → Eksik araçları indir** akışı Medya ve Office araçlarını sırayla kurar. Bilgisayarında bulunan araçlar yeniden indirilmez; iptal veya hata sonrasında yalnızca eksik gruplarla devam edilir. **Araçlar hazır** durumu iki grup da kullanılabilir olduğunda gösterilir. İndirmeler doğrudan upstream’den gelir; hash’leri kurulumdan önce doğrulanır. Temel yerel görsel/PDF işlemleri hemen çalışır. [Sürümler, hash’ler ve lisanslar](docs/dependencies.md).
 

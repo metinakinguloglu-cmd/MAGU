@@ -1,8 +1,12 @@
-# Nashi for Windows
+# MAGU for Windows
 
 Mac and Windows 0.7.5 are published with the shared 45-format / 27-tool catalog and aligned Home, Library, paste, preview and window-management workflows. See [the feature parity and verification matrix](FEATURE-PARITY.md) for implementation, evidence and platform differences.
 
-Nashi uses WPF / .NET 10, the same pear artwork, file garden, rounded cards, gold actions and light/dark palette as macOS, with Windows keyboard conventions and native window controls. Build with `dotnet publish windows/Nashi.Windows -c Release -o build/windows/Nashi`. The output is self-contained; users do not install .NET separately. Keep the portable folder together in a writable location so updates can replace it safely.
+MAGU uses WPF / .NET 10 with native Windows controls. Build with `dotnet publish windows/Nashi.Windows -c Release -o build/windows/Nashi`. The output is self-contained; users do not install .NET separately. Keep the portable folder together in a writable location so updates can replace it safely.
+
+For a local per-user installation, build the self-contained output and compile `packaging/MAGU.nsi` with NSIS. The installer uses `%LOCALAPPDATA%\\Programs\\MAGU`, creates MAGU Start-menu and optional desktop shortcuts, and does not remove the existing `%LOCALAPPDATA%\\Nashi` user-data folder during uninstall.
+
+Official Windows release ZIPs, installers and SHA-256 files are produced by `.github/workflows/release-windows.yml` for version tags matching `windows/Directory.Build.props`. No download link is listed here until a real MAGU GitHub Release has been published.
 
 The shared catalog contains 27 tools and 46 input formats. It includes photo editing, framing/collages, crop/annotation/redaction, QR/PDF tools, document/Pages/EPUB/spreadsheet/slides conversion, archives/subtitles, media tools and public web downloads. Runtime setup is available from Home. Download URLs and SHA-256 hashes are pinned in `Toolchain.cs`, `OfficeRuntime.cs` and `MetadataService.cs`. `Nashi.Core` also installs Linux x64 builds of the media and metadata tools, which the Linux CI job exercises through `Nashi.Verify`; upstream licenses remain separate from Nashi's MIT license. See [third-party notices](THIRD-PARTY-NOTICES.txt).
 

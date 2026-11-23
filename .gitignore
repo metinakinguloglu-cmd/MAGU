@@ -16,3 +16,4 @@ Configuration/CredentialBroker.json
 *.mobileprovision
 **/bin/
 **/obj/
+packaging/*.exe

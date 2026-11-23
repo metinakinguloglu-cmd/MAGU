@@ -1,6 +1,6 @@
-<p align="center"><img src="Resources/Brand/NashiIcon.png" width="128" alt="Nashi"></p>
-<h1 align="center">Nashi</h1>
-<p align="center">Your files, a little sweeter. · Dosyaların için tatlı bir kolaylık.</p>
+<p align="center"><img src="Resources/Brand/MAGU/MAGU-Symbol-Transparent.png" width="128" alt="MAGU"></p>
+<h1 align="center">MAGU</h1>
+<p align="center">Drop. Convert. Done. · Bırak. Dönüştür. Tamam.</p>
 
 [English guide](https://orkunisitmak.github.io/nashi-app/) · [Türkçe](https://orkunisitmak.github.io/nashi-app/tr/) · [Latest release](https://github.com/orkunisitmak/nashi-app/releases/latest) · [Security](SECURITY.md)
 

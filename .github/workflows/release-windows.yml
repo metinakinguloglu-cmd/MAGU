@@ -1,0 +1,88 @@
+name: MAGU Windows release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Existing version tag to publish, for example v0.7.19'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-2025
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Resolve and validate release version
+        id: version
+        shell: pwsh
+        env:
+          INPUT_TAG: ${{ inputs.tag }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          [xml]$props = Get-Content windows/Directory.Build.props
+          $version = [string]$props.Project.PropertyGroup.Version
+          if ($version -notmatch '^\d+\.\d+\.\d+$') { throw "Invalid project version: $version" }
+          $tag = if ($env:INPUT_TAG) { $env:INPUT_TAG } else { $env:REF_NAME }
+          if ($tag -ne "v$version") { throw "Tag $tag does not match project version v$version" }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "tag=$tag" >> $env:GITHUB_OUTPUT
+
+      - name: Restore and publish self-contained Windows x64 app
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          dotnet restore windows/Nashi.Windows --locked-mode
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet publish windows/Nashi.Windows -c Release --no-restore -o build/windows/Nashi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build per-user installer
+        shell: pwsh
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          choco install nsis --no-progress -y
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $makensis = Join-Path ${env:ProgramFiles(x86)} 'NSIS\makensis.exe'
+          if (!(Test-Path $makensis)) { throw 'NSIS was not installed' }
+          & $makensis "/DAPP_SOURCE=$((Resolve-Path build/windows/Nashi).Path)" "/DAPP_VERSION=$env:APP_VERSION" "/DAPP_ICON=$((Resolve-Path Resources/Brand/MAGU/MAGU-Windows.ico).Path)" packaging/MAGU.nsi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Move-Item MAGU-Windows-x64-setup.exe build/MAGU-Windows-x64-setup.exe
+
+      - name: Create portable ZIP and checksums
+        shell: pwsh
+        env:
+          APP_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Compress-Archive -Path build/windows/Nashi/* -DestinationPath build/MAGU-Windows-x64.zip
+          Get-FileHash build/MAGU-Windows-x64.zip -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  MAGU-Windows-x64.zip" } | Set-Content -NoNewline build/MAGU-Windows-x64.sha256
+          Get-FileHash build/MAGU-Windows-x64-setup.exe -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  MAGU-Windows-x64-setup.exe" } | Add-Content build/MAGU-Windows-x64.sha256
+
+      - name: Publish GitHub Release assets
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          gh release create $env:RELEASE_TAG build/MAGU-Windows-x64.zip build/MAGU-Windows-x64-setup.exe build/MAGU-Windows-x64.sha256 --title "MAGU $env:RELEASE_VERSION" --generate-notes --verify-tag
