@@ -13,7 +13,7 @@
   let video=null,requestId=0;
   const id=()=>`yt-${Date.now()}-${++requestId}`;
   const currentUrl=()=>location.href;
-  function request(payload){return new Promise(resolve=>chrome.runtime.sendMessage({type:"magu-native",payload},resolve));}
+  async function request(payload){try{return await chrome.runtime.sendMessage({type:"magu-native",payload});}catch(error){return {ok:false,error:"MAGU eklentisi yenilendi. YouTube sayfasını yenileyip tekrar deneyin."};}}
   async function togglePanel(){panel.classList.toggle("open");if(panel.classList.contains("open"))state.textContent="Bir indirme seçin.";}
   button.onclick=togglePanel;
   chrome.runtime.onMessage.addListener(message=>{if(message?.type==="toggle-magu")togglePanel();});
