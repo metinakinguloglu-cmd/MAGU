@@ -20,6 +20,7 @@ internal sealed class BrowserBridge:IDisposable
                 await server.WaitForConnectionAsync(lifetime.Token);var raw=await ReadFrameAsync(server,lifetime.Token);var request=raw is null?null:BrowserProtocol.Deserialize<BrowserRequest>(raw);
                 using var sendLock=new SemaphoreSlim(1,1);
                 if(request is null||!BrowserProtocol.IsSupportedRequest(request)){await SendAsync(server,BrowserProtocol.Serialize(new BrowserResponse("error",request?.Id??"",false,"Invalid browser request.")),sendLock,lifetime.Token);continue;}
+                if(request.Type=="download")await SendAsync(server,BrowserProtocol.Serialize(new BrowserResponse("accepted",request.Id)),sendLock,lifetime.Token);
                 var progress=new Progress<OperationProgress>(value=>_=SendAsync(server,BrowserProtocol.Serialize(new BrowserResponse("progress",request.Id,Label:value.Label,Fraction:value.Fraction)),sendLock,lifetime.Token));
                 var response=await window.Dispatcher.InvokeAsync(()=>window.HandleBrowserRequestAsync(request,progress)).Task.Unwrap();await SendAsync(server,BrowserProtocol.Serialize(response),sendLock,lifetime.Token);
             }
