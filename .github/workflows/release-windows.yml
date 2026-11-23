@@ -50,7 +50,11 @@ jobs:
           $ErrorActionPreference = 'Stop'
           dotnet restore windows/Nashi.Windows --locked-mode
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet restore windows/Nashi.BrowserHost --locked-mode
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           dotnet publish windows/Nashi.Windows -c Release --no-restore -o build/windows/Nashi
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          dotnet publish windows/Nashi.BrowserHost -c Release --no-restore -o build/windows/Nashi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Build per-user installer

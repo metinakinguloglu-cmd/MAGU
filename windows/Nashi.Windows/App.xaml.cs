@@ -5,6 +5,7 @@ public partial class App:Application
     private SingleInstance? instance;
     internal static bool IsSmokeTest{get;private set;}
     private WindowManagement? windowManagement;
+    private BrowserBridge? browserBridge;
     protected override void OnStartup(StartupEventArgs e)
     {
         if(Environment.GetEnvironmentVariable("NASHI_SMOKE_DIRECTORY") is {} diagnostics)
@@ -125,7 +126,7 @@ public partial class App:Application
         if(!instance.Primary){ShutdownMode=ShutdownMode.OnExplicitShutdown;_ = ForwardAndExit(paths);return;}
         // Float shelves have no owner. Closing Nashi (not hiding it to the tray) must end the
         // process instead of leaving it behind a shelf with a closed main window.
-        var window=new MainWindow(paths,offerToolSetup:!e.Args.Contains("--background"));MainWindow=window;ShutdownMode=ShutdownMode.OnMainWindowClose;instance.Start(incoming=>Dispatcher.BeginInvoke(()=>window.AcceptLaunch(incoming)));window.Show();
+        var window=new MainWindow(paths,offerToolSetup:!e.Args.Contains("--background"));MainWindow=window;ShutdownMode=ShutdownMode.OnMainWindowClose;instance.Start(incoming=>Dispatcher.BeginInvoke(()=>window.AcceptLaunch(incoming)));window.Show();browserBridge=new BrowserBridge(window);
         windowManagement=new WindowManagement(notice:message=>MessageBox.Show(L10n.Text(message),L10n.Text("Window arrangement"),MessageBoxButton.OK,MessageBoxImage.Information),isEnabled:()=>window.WindowManagementEnabled&&!window.ShortcutForegroundExcluded);
     }
     internal static void UseSavedLanguage(Func<string>? readLanguage=null)
@@ -138,7 +139,7 @@ public partial class App:Application
     {
         try{await instance!.Notify(paths);Shutdown(0);}catch(Exception error)when(error is IOException or OperationCanceledException or UnauthorizedAccessException){UseSavedLanguage();MessageBox.Show(L10n.Text("MAGU is already running but is still starting. Open it from the system tray or try again in a moment."),"MAGU");Shutdown(1);}
     }
-    protected override void OnExit(ExitEventArgs e){windowManagement?.Dispose();Feedback.Stop();PdfRasterDocument.Shutdown();base.OnExit(e);}
+    protected override void OnExit(ExitEventArgs e){browserBridge?.Dispose();windowManagement?.Dispose();Feedback.Stop();PdfRasterDocument.Shutdown();base.OnExit(e);}
     private async Task InstallUpdateAsync()
     {
         try

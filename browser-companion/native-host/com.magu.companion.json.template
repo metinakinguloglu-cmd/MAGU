@@ -1,0 +1,10 @@
+{
+  "name": "com.magu.companion",
+  "description": "MAGU Browser Companion native messaging host",
+  "path": "__MAGU_BROWSER_HOST_PATH__",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://__CHROME_EXTENSION_ID__/*",
+    "edge-extension://__EDGE_EXTENSION_ID__/*"
+  ]
+}
