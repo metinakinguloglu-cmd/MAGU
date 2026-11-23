@@ -69,7 +69,7 @@ jobs:
           if (!(Test-Path $makensis)) { throw 'NSIS was not installed' }
           & $makensis "/DAPP_SOURCE=$((Resolve-Path build/windows/Nashi).Path)" "/DAPP_VERSION=$env:APP_VERSION" "/DAPP_ICON=$((Resolve-Path Resources/Brand/MAGU/MAGU-Windows.ico).Path)" packaging/MAGU.nsi
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          Move-Item MAGU-Windows-x64-setup.exe build/MAGU-Windows-x64-setup.exe
+          Move-Item packaging/MAGU-Windows-x64-setup.exe build/MAGU-Windows-x64-setup.exe
 
       - name: Create portable ZIP and checksums
         shell: pwsh
