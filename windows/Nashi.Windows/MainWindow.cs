@@ -315,7 +315,7 @@ public sealed partial class MainWindow:Window
             {
                 var info=await web.InspectAsync(request.Url);string[] formats=info.AudioOnly?["mp3","m4a","wav","flac"]:["mp4","webm","mp3","m4a","wav","flac"];return new("inspect-result",request.Id,Title:info.Title,Heights:info.Heights,Formats:formats);
             }
-            var kind=request.Kind switch{"mp4"=>"video","webm"=>"video:webm","mp3"=>"audio:mp3","m4a"=>"audio:m4a","wav"=>"audio:wav","flac"=>"audio:flac",_=>throw new ArgumentException("Choose a supported media format.")};
+            var kind=request.Kind switch{"mp4"=>"video","webm"=>"video:webm","mp3"=>"audio:mp3","m4a"=>"audio:m4a","wav"=>"audio:wav","flac"=>"audio:flac","thumbnail"=>"thumbnail",_=>throw new ArgumentException("Choose a supported media format.")};
             IReadOnlyList<string>? outputs=null;Exception? failure=null;await RunAsync((destination,p,t)=>web.DownloadAsync(request.Url,kind,destination,p,t,request.MaximumHeight),"Download "+kind,value=>progress.Report(value),value=>outputs=value,error=>failure=error);
             return failure is null?new("complete",request.Id,Outputs:outputs?.ToArray()):new("error",request.Id,false,failure.Message);
         }
