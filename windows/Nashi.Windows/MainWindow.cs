@@ -302,10 +302,33 @@ public sealed partial class MainWindow:Window
         else if(label=="Move"||preferences.Value.OutputMode=="ask"||(files.Count==0&&owner==this)){var folder=new OpenFolderDialog{Title=L10n.Text("Save new files to…"),InitialDirectory=Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)};if(folder.ShowDialog(owner)!=true)return;destination=folder.FolderName;}
         else destination=owner==webWindow?preferences.Value.DownloadFolder:preferences.Value.OutputMode=="folder"&&!string.IsNullOrWhiteSpace(preferences.Value.OutputFolder)?preferences.Value.OutputFolder:Path.GetDirectoryName(files[0])!;
         SetBusy(true);using var cancellation=new CancellationTokenSource();var toast=new ToastWindow(owner,cancellation.Cancel);toast.Show();
-        try{var outputs=await work(destination,new Progress<OperationProgress>(value=>{toast.Update(value);externalProgress?.Invoke(value);}),cancellation.Token);toast.Complete(outputs);Record(label,outputs);L10n.SetText(status,$"Saved {outputs.Count} new {(outputs.Count==1?"file":"files")}. Originals kept.");if(preferences.Value.RevealFinished&&outputs.Count>0)Reveal(outputs[0]);completed?.Invoke(outputs);}
+        try{var outputs=await work(destination,new Progress<OperationProgress>(value=>{toast.Update(value);externalProgress?.Invoke(value);}),cancellation.Token);if(destinationOverride is null&&preferences.Value.OutputMode=="replace")outputs=ReplaceOriginals(files,outputs);toast.Complete(outputs);Record(label,outputs);L10n.SetText(status,$"Saved {outputs.Count} new {(outputs.Count==1?"file":"files")}. {(preferences.Value.OutputMode=="replace"?"Originals replaced when possible.":"Originals kept.")}");if(preferences.Value.RevealFinished&&outputs.Count>0)Reveal(outputs[0]);completed?.Invoke(outputs);}
         catch(OperationCanceledException){toast.Close();L10n.SetText(status,"Cancelled. Originals kept.");failed?.Invoke(new OperationCanceledException("Download cancelled."));}
         catch(Exception error){toast.Close();MessageBox.Show(this,L10n.Text(error.Message),L10n.Text("Couldn’t finish"),MessageBoxButton.OK,MessageBoxImage.Information);failed?.Invoke(error);}
         finally{SetBusy(false);}
+    }
+    private static IReadOnlyList<string> ReplaceOriginals(IReadOnlyList<string> inputs,IReadOnlyList<string> outputs)
+    {
+        if(inputs.Count!=outputs.Count)return outputs;
+        var pairs=inputs.Zip(outputs).Where(pair=>File.Exists(pair.First)&&File.Exists(pair.Second)&&!string.Equals(Path.GetFullPath(pair.First),Path.GetFullPath(pair.Second),StringComparison.OrdinalIgnoreCase)).Select(pair=>(Original:Path.GetFullPath(pair.First),Output:Path.GetFullPath(pair.Second),Target:Path.ChangeExtension(Path.GetFullPath(pair.First),Path.GetExtension(pair.Second)))).ToArray();
+        if(pairs.Length!=inputs.Count)return outputs;
+        var backups=new List<(string Original,string? OriginalBackup,string Target,string? TargetBackup,string Output)>();
+        try
+        {
+            foreach(var (original,output,target) in pairs)
+            {
+                var originalBackup=original+".magu-backup-"+Guid.NewGuid().ToString("N");File.Move(original,originalBackup);string? targetBackup=null;if(File.Exists(target)&&!string.Equals(target,output,StringComparison.OrdinalIgnoreCase)){targetBackup=target+".magu-backup-"+Guid.NewGuid().ToString("N");File.Move(target,targetBackup);}backups.Add((original,originalBackup,target,targetBackup,output));if(!string.Equals(output,target,StringComparison.OrdinalIgnoreCase))File.Move(output,target);
+            }
+            foreach(var (_,originalBackup,_,targetBackup,_) in backups){if(originalBackup is not null)File.Delete(originalBackup);if(targetBackup is not null)File.Delete(targetBackup);}return pairs.Select(pair=>pair.Target).ToArray();
+        }
+        catch
+        {
+            foreach(var (original,originalBackup,target,targetBackup,output) in backups.AsEnumerable().Reverse())
+            {
+                try{if(File.Exists(target))File.Delete(target);if(File.Exists(output)&&!string.Equals(output,target,StringComparison.OrdinalIgnoreCase))File.Delete(output);if(targetBackup is not null&&File.Exists(targetBackup))File.Move(targetBackup,target);if(originalBackup is not null&&File.Exists(originalBackup))File.Move(originalBackup,original);}catch{}
+            }
+            throw;
+        }
     }
     internal async Task<BrowserResponse> HandleBrowserRequestAsync(BrowserRequest request,IProgress<OperationProgress> progress)
     {
