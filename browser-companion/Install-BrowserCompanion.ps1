@@ -11,7 +11,7 @@ $manifest=$manifest.Replace('__MAGU_BROWSER_HOST_PATH__',$hostExe.Replace('\','\
 $manifestDir=Join-Path $env:LOCALAPPDATA 'MAGU\BrowserCompanion'
 New-Item -ItemType Directory -Force -Path $manifestDir | Out-Null
 $manifestPath=Join-Path $manifestDir 'com.magu.companion.json'
-Set-Content -LiteralPath $manifestPath -Value $manifest -Encoding UTF8
+[IO.File]::WriteAllText($manifestPath,$manifest,(New-Object System.Text.UTF8Encoding($false)))
 $chromeKey='HKCU:\Software\Google\Chrome\NativeMessagingHosts\com.magu.companion'
 $edgeKey='HKCU:\Software\Microsoft\Edge\NativeMessagingHosts\com.magu.companion'
 New-Item -Path $chromeKey -Force | Out-Null;Set-ItemProperty -Path $chromeKey -Name '(default)' -Value $manifestPath
