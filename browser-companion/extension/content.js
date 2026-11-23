@@ -20,7 +20,9 @@
     formats.firstElementChild?.classList.add("selected");qualities.lastElementChild?.classList.add("selected");selectedHeight=Number(qualities.lastElementChild?.textContent?.replace("p",""))||null;state.textContent=`${result.title||"YouTube videosi"}`;
   }
   function request(payload){return new Promise(resolve=>chrome.runtime.sendMessage({type:"magu-native",payload},resolve));}
-  button.onclick=async()=>{panel.classList.toggle("open");if(!panel.classList.contains("open"))return;state.textContent="YouTube videosi analiz ediliyor…";download.disabled=true;const result=await request({type:"inspect",id:id(),url:currentUrl()});if(!result?.ok){state.innerHTML=`<span class="error">${result?.error||"MAGU bağlantısı kurulamadı."}</span>`;return;}renderOptions(result);};
+  async function togglePanel(){panel.classList.toggle("open");if(!panel.classList.contains("open"))return;state.textContent="YouTube videosi analiz ediliyor…";download.disabled=true;const result=await request({type:"inspect",id:id(),url:currentUrl()});if(!result?.ok){state.innerHTML=`<span class="error">${result?.error||"MAGU bağlantısı kurulamadı."}</span>`;return;}renderOptions(result);}
+  button.onclick=togglePanel;
+  chrome.runtime.onMessage.addListener(message=>{if(message?.type==="toggle-magu")togglePanel();});
   download.onclick=async()=>{download.disabled=true;state.textContent="MAGU indirmeyi başlatıyor…";const result=await request({type:"download",id:id(),url:currentUrl(),kind:selectedFormat,maximumHeight:selectedHeight});if(result?.ok)state.textContent="İndirme MAGU'da başladı.";else{state.innerHTML=`<span class="error">${result?.error||"İndirme başlatılamadı."}</span>`;download.disabled=false;}};
   const observe=()=>{video=document.querySelector("video");host.style.display=video?"block":"none";};new MutationObserver(observe).observe(document.documentElement,{childList:true,subtree:true});observe();
 })();

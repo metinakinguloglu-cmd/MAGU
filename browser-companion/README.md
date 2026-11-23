@@ -13,9 +13,9 @@ Bu prototip Chrome ve Edge Manifest V3 eklentisini, kullanıcıya özel Native M
 .\browser-companion\Install-BrowserCompanion.ps1 -ChromeExtensionId CHROME_ID -EdgeExtensionId EDGE_ID -InstallRoot "$env:LOCALAPPDATA\Programs\MAGU"
 ```
 
-5. MAGU’yu açın ve medya araçlarının (yt-dlp, FFmpeg, Deno) kurulu olduğundan emin olun.
+5. MAGU’yu `build/windows/MAGU-Browser-Final/Nashi.exe` dosyasından başlatın veya MAGU Setup ile kurun. Medya araçlarının (yt-dlp, FFmpeg, Deno) kurulu olduğundan emin olun.
 6. YouTube’da bitmiş, herkese açık bir video açın. Sağ altta MAGU simgesi görünür; biçim ve kaliteyi seçip **MAGU’ya gönder** düğmesine basın.
 
-İndirme kullanıcı onayı olmadan başlamaz. İndirme MAGU penceresinde mevcut Toast/progress arayüzüyle yürür. DRM, canlı/yaklaşan yayınlar ve oturum gerektiren içerikler desteklenmez.
+İndirme kullanıcı onayı olmadan başlamaz. Sağ üstteki MAGU eklenti simgesi veya video üzerindeki MAGU simgesi paneli açar. İndirme MAGU penceresinde mevcut Toast/progress arayüzüyle yürür. DRM, canlı/yaklaşan yayınlar ve oturum gerektiren içerikler desteklenmez.
 
 Bu prototip yalnızca YouTube’u etkinleştirir. Instagram Reels ve TikTok için payload sınıflandırma ve host protokolü genişletme noktaları hazırdır; bu siteler henüz etkinleştirilmemiştir.

@@ -31,3 +31,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   return true;
 });
+
+chrome.action.onClicked.addListener(tab => {
+  if (tab?.id) chrome.tabs.sendMessage(tab.id, {type: "toggle-magu"}).catch(() => {});
+});
