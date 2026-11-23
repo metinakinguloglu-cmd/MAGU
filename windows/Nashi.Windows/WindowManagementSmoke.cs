@@ -24,7 +24,7 @@ internal static class WindowManagementSmoke
         manager.Trace=message=>{lock(traceLock)File.AppendAllText(trace,DateTime.UtcNow.ToString("O")+" "+message+Environment.NewLine);};
         using var fixture=Process.Start(new ProcessStartInfo(Environment.ProcessPath!){UseShellExecute=false,ArgumentList={"--window-management-fixture"}})??throw new Exception("Window fixture could not start.");
         nint handle=0;var deadline=DateTime.UtcNow.AddSeconds(10);
-        while(handle==0&&DateTime.UtcNow<deadline){DesktopInput.Pump(100);handle=FindWindow(null,"Nashi Window Layout Fixture");}
+        while(handle==0&&DateTime.UtcNow<deadline){DesktopInput.Pump(100);handle=FindWindow(null,"MAGU Window Layout Fixture");}
         try
         {
             check(handle!=0,"Window fixture did not appear.");
@@ -61,7 +61,7 @@ internal static class WindowManagementSmoke
             wheel.Show();wheel.UpdateLayout();DesktopInput.Pump();
             var capture=new RenderTargetBitmap((int)wheel.ActualWidth,(int)wheel.ActualHeight,96,96,PixelFormats.Pbgra32);capture.Render(wheel);ImageEngine.Save(capture,Path.Combine(output,"windows-window-management.png"),"png");wheel.Close();
             using var constrained=Process.Start(new ProcessStartInfo(Environment.ProcessPath!){UseShellExecute=false,ArgumentList={"--window-management-fixture","--minimum-window-width","1000"}})??throw new Exception("Constrained fixture could not start.");
-            nint limited=0;deadline=DateTime.UtcNow.AddSeconds(10);while(limited==0&&DateTime.UtcNow<deadline){DesktopInput.Pump(100);limited=FindWindow(null,"Nashi Constrained Layout Fixture");}
+            nint limited=0;deadline=DateTime.UtcNow.AddSeconds(10);while(limited==0&&DateTime.UtcNow<deadline){DesktopInput.Pump(100);limited=FindWindow(null,"MAGU Constrained Layout Fixture");}
             try
             {
                 check(limited!=0,"Constrained window fixture did not appear");
@@ -97,7 +97,7 @@ internal static class WindowManagementSmoke
                 var dpi=WindowManagement.Native.GetDpiForWindow(target);var expectedSize=(int)Math.Round(WheelPresentation.Diameter*(dpi>0?dpi:96)/96d);
                 while(DateTime.UtcNow<deadline)
                 {
-                    Thread.Sleep(50);if(!manager.WheelReady)continue;var candidate=FindWindow(null,"Nashi Window Management");
+                    Thread.Sleep(50);if(!manager.WheelReady)continue;var candidate=FindWindow(null,"MAGU Window Management");
                     if(candidate==0||!WindowManagement.Native.IsWindowVisible(candidate))continue;
                     var bounds=WindowManagement.Bounds(candidate);
                     // HWND creation precedes Show/Position; do not aim at the unpositioned default rectangle.

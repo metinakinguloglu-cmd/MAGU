@@ -21,7 +21,7 @@ internal static class RangeAccessibilityChecks
         var panel=new StackPanel{Margin=new Thickness(24)};
         panel.Children.Add(new TextBlock{Text="Trim · semantic Start and End",Margin=new Thickness(0,0,0,20),FontSize=18});
         panel.Children.Add(timeline);panel.Children.Add(new TextBlock{Text="2.000 – 8.000 seconds",Margin=new Thickness(0,20,0,0)});
-        var window=new Window{Owner=owner,Title="Nashi Range Accessibility QA",SizeToContent=SizeToContent.WidthAndHeight,ResizeMode=ResizeMode.NoResize,Content=panel};
+        var window=new Window{Owner=owner,Title="MAGU Range Accessibility QA",SizeToContent=SizeToContent.WidthAndHeight,ResizeMode=ResizeMode.NoResize,Content=panel};
         void Assert(bool valid,string label){check(valid,label);checks.Add(label);}
         bool Near(double a,double b)=>Math.Abs(a-b)<.000001;
         bool Rejects(double value,IRangeValueProvider provider)

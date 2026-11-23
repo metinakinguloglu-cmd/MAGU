@@ -27,13 +27,13 @@ public sealed partial class MainWindow
     {
         var menu=new System.Windows.Controls.ContextMenu();
         void Item(string text,Action action){var item=new System.Windows.Controls.MenuItem();L10n.Bind(item,System.Windows.Controls.HeaderedItemsControl.HeaderProperty,text);item.Click+=(_,_)=>action();menu.Items.Add(item);}
-        Item("Open Nashi",ShowMain);Item("Library",()=>{ShowMain();ShowLibrary(true);});Item("Download copied link",OpenCopiedLink);Item("Settings",()=>{ShowMain();ShowSettings();});menu.Items.Add(DragShortcutsItem());Item(update is null?"Check for updates":"Update to "+update.Version,()=>{ShowMain();_ = CheckUpdatesAsync(true);});menu.Items.Add(new System.Windows.Controls.Separator());Item("Quit Nashi",()=>{if(busy){ShowMain();L10n.SetText(status,"Finish or cancel the current operation before quitting.");return;}quitting=true;Application.Current.Shutdown();});return menu;
+        Item("Open MAGU",ShowMain);Item("Library",()=>{ShowMain();ShowLibrary(true);});Item("Download copied link",OpenCopiedLink);Item("Settings",()=>{ShowMain();ShowSettings();});menu.Items.Add(DragShortcutsItem());Item(update is null?"Check for updates":"Update to "+update.Version,()=>{ShowMain();_ = CheckUpdatesAsync(true);});menu.Items.Add(new System.Windows.Controls.Separator());Item("Quit MAGU",()=>{if(busy){ShowMain();L10n.SetText(status,"Finish or cancel the current operation before quitting.");return;}quitting=true;Application.Current.Shutdown();});return menu;
     }
     // Same setting as the Settings toggle, reachable without leaving a game or an editor.
     // Disabled while a dialog is open so an open Settings window cannot show a stale value.
     private System.Windows.Controls.MenuItem DragShortcutsItem()
     {
-        var item=new System.Windows.Controls.MenuItem{IsCheckable=true,IsChecked=preferences.Value.Enabled,IsEnabled=DesktopGeometry.IsInteractive(this)};L10n.Bind(item,System.Windows.Controls.HeaderedItemsControl.HeaderProperty,"Enable Nashi drag shortcuts");
+        var item=new System.Windows.Controls.MenuItem{IsCheckable=true,IsChecked=preferences.Value.Enabled,IsEnabled=DesktopGeometry.IsInteractive(this)};L10n.Bind(item,System.Windows.Controls.HeaderedItemsControl.HeaderProperty,"Enable MAGU drag shortcuts");
         item.Click+=(_,_)=>{try{preferences.Save(preferences.Value with{Enabled=item.IsChecked});ApplyPreferences();}catch(Exception error) when(error is IOException or UnauthorizedAccessException){item.IsChecked=preferences.Value.Enabled;ShowMain();L10n.SetText(status,error.Message);}};
         return item;
     }

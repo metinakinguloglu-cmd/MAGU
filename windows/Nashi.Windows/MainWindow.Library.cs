@@ -37,7 +37,7 @@ public sealed partial class MainWindow
     }
     private void ConfigureLibraryRow(Border card,LibraryEntry entry)
     {
-        libraryCards[entry.Id]=card;card.Tag=entry;card.Focusable=true;card.ToolTip=L10n.Text("Space: preview · Enter: use in Nashi");
+        libraryCards[entry.Id]=card;card.Tag=entry;card.Focusable=true;card.ToolTip=L10n.Text("Space: preview · Enter: use in MAGU");
         card.BorderBrush=selectedLibraryId==entry.Id?Theme.Brush("Gold"):Theme.Brush("Line");
         card.GotKeyboardFocus+=(_,_)=>SelectCard(entry.Id);
         card.PreviewMouseLeftButtonDown+=(_,e)=>{libraryDragStart=e.GetPosition(card);SelectCard(entry.Id);if(!IsButton(e.OriginalSource as DependencyObject)){card.Focus();if(e.ClickCount==2){PreviewEntry(entry);e.Handled=true;}}};

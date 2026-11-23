@@ -32,7 +32,7 @@ public sealed class FloatShelf:Window
 
     public FloatShelf(IEnumerable<string> initial,Func<IReadOnlyList<string>,string,Task> action,Action<IReadOnlyList<string>> reuse)
     {
-        this.action=action;this.reuse=reuse;Theme.Attach(this);Title="Float · Nashi";
+        this.action=action;this.reuse=reuse;Theme.Attach(this);Title="Float · MAGU";
         Width=112;Height=136;MinWidth=112;MinHeight=136;Topmost=true;ShowInTaskbar=false;WindowStyle=WindowStyle.None;AllowsTransparency=true;Background=Brushes.Transparent;ResizeMode=ResizeMode.NoResize;AllowDrop=true;WindowStartupLocation=WindowStartupLocation.CenterScreen;
         root.RowDefinitions.Add(new(){Height=new(136)});root.RowDefinitions.Add(new(){Height=new(1,GridUnitType.Star)});root.RowDefinitions.Add(new(){Height=new(0)});
         Content=new Grid{Children={glass,root}};root.Children.Add(header);header.Children.Add(stack);header.Children.Add(countPlate);header.Children.Add(count);
@@ -102,7 +102,7 @@ public sealed class FloatShelf:Window
         const string wire="M76,71 L57,28 C47,6 70,-1 78,19 L94,57 C102,74 87,78 81,63 L66,28";
         foreach(var (color,width) in new[]{("#55000000",4.5),("#C2CAC5",2.6),("#CCFFFFFF",.7)})stack.Children.Add(new System.Windows.Shapes.Path{Data=Geometry.Parse(wire),Stroke=new SolidColorBrush((Color)ColorConverter.ConvertFromString(color)),StrokeThickness=width,StrokeStartLineCap=PenLineCap.Round,StrokeEndLineCap=PenLineCap.Round,IsHitTestVisible=false});
     }
-    private void UpdateLabels(){count.Content=(IsExpanded?"⌃  ":"⌄  ")+L10n.Text(paths.Count==1?"1 item":$"{paths.Count} items");count.ToolTip=L10n.Text(IsExpanded?"Collapse Float":"Expand Float");status.Text=L10n.Text(files.SelectedItems.Count>0?$"{files.SelectedItems.Count} selected":"Space · Preview");Title=$"Float · {paths.Count} · Nashi";}
+    private void UpdateLabels(){count.Content=(IsExpanded?"⌃  ":"⌄  ")+L10n.Text(paths.Count==1?"1 item":$"{paths.Count} items");count.ToolTip=L10n.Text(IsExpanded?"Collapse Float":"Expand Float");status.Text=L10n.Text(files.SelectedItems.Count>0?$"{files.SelectedItems.Count} selected":"Space · Preview");Title=$"Float · {paths.Count} · MAGU";}
     private void Present()
     {
         glass.Visibility=IsExpanded?Visibility.Visible:Visibility.Collapsed;glass.Background=new LinearGradientBrush(Theme.Dark?Color.FromArgb(248,42,49,34):Color.FromArgb(248,250,231,185),Theme.Dark?Color.FromArgb(248,26,39,30):Color.FromArgb(248,227,235,211),90);glass.SetResourceReference(Border.BorderBrushProperty,"Line");
@@ -128,7 +128,7 @@ public sealed class FloatShelf:Window
     private ContextMenu Menu()
     {
         var menu=new ContextMenu();menu.Opened+=(_,_)=>{interacting=true;hover.Stop();};menu.Closed+=(_,_)=>{interacting=false;ScheduleHover(false);};
-        foreach(var (label,id) in new[]{("Open","open"),("Quick Preview","preview"),("Show in Explorer","reveal"),("Copy","copy"),("Copy Path","copyPath"),("Share…","share"),("Remove from Float","remove"),("Use in Nashi","reuse")})
+        foreach(var (label,id) in new[]{("Open","open"),("Quick Preview","preview"),("Show in Explorer","reveal"),("Copy","copy"),("Copy Path","copyPath"),("Share…","share"),("Remove from Float","remove"),("Use in MAGU","reuse")})
         {var item=new MenuItem{Header=L10n.Text(label)};item.Click+=async(_,_)=>{try{if(id=="open")foreach(var path in Selection())MainWindow.OpenUrl(path);else if(id=="preview")Preview();else if(id=="reveal")foreach(var path in Selection())MainWindow.Reveal(path);else if(id=="remove")Remove();else if(id=="reuse")reuse(Selection());else await action(Selection(),id);}catch(Exception error)when(ActionError(error)){Report(error);}};menu.Items.Add(item);}
         menu.Items.Add(new Separator());
         foreach(var iconMode in new[]{true,false}){var item=new MenuItem{Header=L10n.Text(iconMode?"Icons":"List"),IsCheckable=true,IsChecked=icons==iconMode};item.Click+=(_,_)=>{icons=iconMode;Reload();SetExpanded(false);SetExpanded(true);};menu.Items.Add(item);}

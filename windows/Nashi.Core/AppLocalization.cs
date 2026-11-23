@@ -50,16 +50,17 @@ public static class AppLocalization
         key.EndsWith(token,StringComparison.Ordinal)&&Regex.IsMatch(key[..^token.Length],@"\p{L} $");
     public static string Text(string source,string language)
     {
-        if(Normalize(language)!="tr")return source;
-        if(Turkish.TryGetValue(source,out var exact)||uppercase.TryGetValue(source,out exact))return exact;
-        if(source.Length>=16_384)return source;
+        var lookup=source.Replace("MAGU","Nashi",StringComparison.Ordinal);
+        if(Normalize(language)!="tr")return source.Replace("Nashi","MAGU",StringComparison.Ordinal);
+        if(Turkish.TryGetValue(lookup,out var exact)||uppercase.TryGetValue(lookup,out exact))return exact.Replace("Nashi","MAGU",StringComparison.Ordinal);
+        if(source.Length>=16_384)return source.Replace("Nashi","MAGU",StringComparison.Ordinal);
         // Window titles: translate the title, keep the app suffix ("Convert to JPG · Nashi").
-        const string suffix=" · Nashi";if(source.Length>suffix.Length&&source.EndsWith(suffix,StringComparison.Ordinal))return Text(source[..^suffix.Length],language)+suffix;
+        const string suffix=" · Nashi";if(lookup.Length>suffix.Length&&lookup.EndsWith(suffix,StringComparison.Ordinal))return Text(lookup[..^suffix.Length],language)+" · MAGU";
         foreach(var (pattern,target) in templates)
         {
-            var match=pattern.Match(source);if(!match.Success)continue;
-            return Regex.Replace(target,@"\{([0-9])\}",token=>int.TryParse(token.Groups[1].Value,out var index)&&index+1<match.Groups.Count?match.Groups[index+1].Value:token.Value);
+            var match=pattern.Match(lookup);if(!match.Success)continue;
+            return Regex.Replace(target,@"\{([0-9])\}",token=>int.TryParse(token.Groups[1].Value,out var index)&&index+1<match.Groups.Count?match.Groups[index+1].Value:token.Value).Replace("Nashi","MAGU",StringComparison.Ordinal);
         }
-        return source;
+        return source.Replace("Nashi","MAGU",StringComparison.Ordinal);
     }
 }
