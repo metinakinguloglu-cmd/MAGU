@@ -141,7 +141,7 @@ internal sealed class GlobalDropWheel:Window
         // the element under the start point (for example the NVIDIA App overlay) never hides dragged files.
         if(files.Length>0&&dataLink is null)
         {
-            if(mode=="convert")return FeatureCatalog.Formats(files).Select(f=>new ToolChoice("convert:"+f,f.ToUpperInvariant(),"↗")).ToArray();
+            if(mode=="convert")return FeatureCatalog.Formats(files).Select(f=>new ToolChoice("convert:"+f,$"Convert to {f.ToUpperInvariant()}","↗")).ToArray();
             if(mode=="actions")return [new("share","Share","◉"),new("float","Float","▣"),new("copy","Copy","▱"),new("move","Move","↗"),new("copyPath","Copy Path","↪"),new("terminal","Terminal",">_")];
             return FeatureCatalog.Tools(files).Select(t=>new ToolChoice(t,FeatureCatalog.ToolNames[t],MainWindow.ToolSymbol(t))).ToArray();
         }

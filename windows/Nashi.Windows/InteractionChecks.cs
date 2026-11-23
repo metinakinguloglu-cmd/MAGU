@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -16,7 +17,7 @@ internal static class InteractionChecks
         {var child=VisualTreeHelper.GetChild(root,i);yield return child;foreach(var nested in Children(child))yield return nested;}
     }
     private static Button? Caption(WheelWindow wheel,string title)=>Children(wheel).OfType<Button>()
-        .FirstOrDefault(button=>Children(button).OfType<TextBlock>().Any(text=>text.Text==L10n.Uppercase(title)));
+        .FirstOrDefault(button=>Children(button).OfType<TextBlock>().Any(text=>text.Text==L10n.Uppercase(title)||text.Text.Contains(L10n.Uppercase(title),StringComparison.OrdinalIgnoreCase)));
     private static void ControlKey(Window window,Key key)
     {
         window.Activate();DesktopInput.Pump();DesktopInput.Hold(Key.LeftCtrl,true);
@@ -43,17 +44,18 @@ internal static class InteractionChecks
             reopened.IsChecked=initial;reopened.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
             Verify(new PreferencesStore(library.DirectoryPath).Value.Enabled==initial,"Tray shortcut item restores the setting");
             var open=Children(window).OfType<Button>().Single(button=>button.Content as string=="Open wheel");
-            DesktopInput.Click(open);
+            open.RaiseEvent(new RoutedEventArgs(Button.ClickEvent));DesktopInput.Pump(150);
             var wheel=Application.Current.Windows.OfType<WheelWindow>().FirstOrDefault(candidate=>candidate.Owner==window);
             Verify(wheel is not null,"Clicking Home's Open wheel button did not open the wheel");
             if(wheel is not null)
             {
                 var canvas=Children(wheel).OfType<Canvas>().First();var petals=canvas.Children.OfType<System.Windows.Shapes.Path>().ToArray();var labels=canvas.Children.OfType<Button>().Take(petals.Length).ToArray();
                 Verify(labels.Length==petals.Length&&labels.Select((label,index)=>{var bounds=label.TransformToAncestor(canvas).TransformBounds(new Rect(0,0,label.ActualWidth,label.ActualHeight));return new[]{bounds.TopLeft,bounds.TopRight,bounds.BottomLeft,bounds.BottomRight}.All(petals[index].Data.FillContains);}).All(fits=>fits),"Adding Convert placed a wheel label outside its tool sector");
+                Verify(Children(wheel).OfType<Button>().Any(button=>AutomationProperties.GetName(button)=="Back"),"Wheel submenu has no visible back control");
                 wheel.Close();
             }
-            Children(window).OfType<Button>().Single(button=>button.Content as string=="Home").Focus();
-            DesktopInput.Key(window,Key.F,control:true);
+            window.Activate();Children(window).OfType<Button>().Single(button=>button.Content as string=="Home").Focus();DesktopInput.Pump(50);
+            ControlKey(window,Key.F);
             Verify(window.LibraryVisible&&window.SearchField.IsKeyboardFocused,$"Ctrl+F did not focus Library search (Library visible: {window.LibraryVisible}; search visible: {window.SearchField.IsVisible}; focus: {Keyboard.FocusedElement?.GetType().Name})");
             if(window.LibraryVisible)
             {
@@ -89,6 +91,7 @@ internal static class InteractionChecks
                     DesktopInput.Key(wheel,Key.Enter);
                     var keyboardFormats=Application.Current.Windows.OfType<WheelWindow>().FirstOrDefault(candidate=>candidate.Owner==window);
                     Verify(keyboardFormats is not null&&Caption(keyboardFormats,"PDF") is not null,"Enter did not open conversion formats from the keyboard wheel");
+                    Verify(keyboardFormats is not null&&Caption(keyboardFormats,"PDF") is { } pdfCaption&&Children(pdfCaption).OfType<TextBlock>().Any(text=>text.Text.Contains("CONVERT TO PDF",StringComparison.Ordinal)),"Conversion wheel showed a bare format instead of an explanatory action name");
                     keyboardFormats?.Close();ControlKey(window,Key.Space);
                     wheel=Application.Current.Windows.OfType<WheelWindow>().First(candidate=>candidate.Owner==window);
                     convert=Caption(wheel,"Convert")!;
@@ -112,7 +115,7 @@ internal static class InteractionChecks
             }
             L10n.Language="tr";ControlKey(window,Key.Space);
             var shortcuts=L10n.Text(MainWindow.ShortcutHelp);
-            Verify(shortcuts.Contains("Ctrl+Space / Enter  Araçları ve dönüştürmeleri aç",StringComparison.Ordinal)&&shortcuts.Contains("Delete  Seçili dosyaları Nashi listesinden kaldır",StringComparison.Ordinal),"Turkish shortcut help lost the conversion or selected-file removal guidance");
+            Verify(shortcuts.Contains("Ctrl+Space / Enter  Araçları ve dönüştürmeleri aç",StringComparison.Ordinal)&&shortcuts.Contains("Delete  Seçili dosyaları MAGU listesinden kaldır",StringComparison.Ordinal),"Turkish shortcut help lost the conversion or selected-file removal guidance");
             var turkishWheel=Application.Current.Windows.OfType<WheelWindow>().FirstOrDefault(candidate=>candidate.Owner==window);
             var turkishConvert=turkishWheel is null?null:Caption(turkishWheel,"Convert");
             Verify(turkishConvert is not null&&Children(turkishConvert).OfType<TextBlock>().Any(text=>text.Text=="DÖNÜŞTÜR"),"Turkish wheel did not show the localized conversion choice");

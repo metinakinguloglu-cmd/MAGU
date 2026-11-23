@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -40,6 +41,13 @@ public sealed class WheelWindow:Window
         if(index>=0)Feedback.Play();
     }
     private readonly bool externalDrag;private readonly Func<string,IReadOnlyList<ToolChoice>>? modes;private string mode="tools";
+    private void ReturnToMainMenu()
+    {
+        if(modes is null){Close();return;}
+        if(mode=="tools"){Close();return;}
+        var next=modes("tools");if(next.Count==0){Close();return;}
+        mode="tools";Populate(next);
+    }
     /// Ctrl, Shift and Alt switch between Tools, Convert and File actions (as configured in Settings), like the wheel that opens while dragging.
     internal bool SwitchMode(string modifier,IReadOnlyCollection<string> held)
     {
@@ -80,8 +88,12 @@ public sealed class WheelWindow:Window
             button.Click+=(_,_)=>{Close();select(choice);};button.MouseEnter+=(_,_)=>Highlight(index);button.GotKeyboardFocus+=(_,_)=>Highlight(index);
             path.MouseLeftButtonUp+=(_,_)=>{Close();select(choice);};path.MouseEnter+=(_,_)=>Highlight(index);
         }
-        var centerLabel=new StackPanel();centerLabel.Children.Add(L10n.Label(new TextBlock{Text=externalDrag?"Arrange window":tools.All(t=>t.Id.StartsWith("convert:"))?"Convert":tools.Any(t=>t.Id=="float")?"File actions":"Tools",FontSize=externalDrag?17:20,FontWeight=FontWeights.SemiBold,TextAlignment=TextAlignment.Center}));centerLabel.Children.Add(L10n.Label(new TextBlock{Text=externalDrag?"Release to place · Esc cancels":"Esc to close",FontSize=externalDrag?9:11,TextAlignment=TextAlignment.Center,Foreground=Theme.Brush("Muted"),Margin=new(0,6,0,0)}));
-        var center=new Button{Style=(Style)Application.Current.FindResource("WheelLabelButton"),Focusable=false,Content=centerLabel,Width=180,Height=180,Background=Brushes.Transparent,Foreground=Theme.Brush("Ink")};Canvas.SetLeft(center,180);Canvas.SetTop(center,180);canvas.Children.Add(center);center.Click+=(_,_)=>Close();
+        if(modes is not null&&!externalDrag)
+        {
+            var back=new Button{Content="←",Width=42,Height=34,FontSize=22,Padding=new(0),Background=Brushes.Transparent,Foreground=Theme.Brush("Ink"),BorderThickness=new(0),ToolTip=L10n.Text("Back")};AutomationProperties.SetName(back,L10n.Text("Back"));Canvas.SetLeft(back,249);Canvas.SetTop(back,12);canvas.Children.Add(back);back.Click+=(_,_)=>ReturnToMainMenu();
+        }
+        var centerLabel=new StackPanel();centerLabel.Children.Add(L10n.Label(new TextBlock{Text=externalDrag?"Arrange window":mode=="convert"?"Convert":mode=="actions"?"File actions":"Tools",FontSize=externalDrag?17:20,FontWeight=FontWeights.SemiBold,TextAlignment=TextAlignment.Center}));centerLabel.Children.Add(L10n.Label(new TextBlock{Text=externalDrag?"Release to place · Esc cancels":mode=="tools"?"Esc to close":"Back · Esc to close",FontSize=externalDrag?9:11,TextAlignment=TextAlignment.Center,Foreground=Theme.Brush("Muted"),Margin=new(0,6,0,0)}));
+        var center=new Button{Style=(Style)Application.Current.FindResource("WheelLabelButton"),Focusable=false,Content=centerLabel,Width=180,Height=180,Background=Brushes.Transparent,Foreground=Theme.Brush("Ink")};Canvas.SetLeft(center,180);Canvas.SetTop(center,180);canvas.Children.Add(center);center.Click+=(_,_)=>{if(modes is not null&&!externalDrag&&mode!="tools")ReturnToMainMenu();else Close();};
         if(IsLoaded&&!externalDrag&&buttons.Count>0)buttons[0].Focus();
     }
 }

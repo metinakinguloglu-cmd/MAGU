@@ -77,7 +77,7 @@ public sealed partial class MainWindow:Window
         AutomationProperties.SetAutomationId(search,"LibrarySearch");AutomationProperties.SetAutomationId(link,"DownloadLink");AutomationProperties.SetAutomationId(list,"SelectedFiles");
         Closing+=(_,e)=>{if(busy){e.Cancel=true;L10n.SetText(status,"Finish the current operation or choose Cancel before closing MAGU.");}};
         DragOver+=(_,e)=>{e.Effects=!busy&&(e.Data.GetDataPresent(DataFormats.FileDrop)||e.Data.GetDataPresent(DataFormats.UnicodeText)||e.Data.GetDataPresent(DataFormats.Html)||e.Data.GetDataPresent("UniformResourceLocatorW"))?DragDropEffects.Copy:DragDropEffects.None;e.Handled=true;};
-        Drop+=(_,e)=>{if(!busy){if(!e.Data.GetDataPresent(DataFormats.FileDrop)&&DragPayload.Parse(e.Data) is not null)OnGlobalDrop("download:auto",e.Data,null);else Import(e.Data);}e.Handled=true;};
+        Drop+=(_,e)=>{if(!busy){if(!e.Data.GetDataPresent(DataFormats.FileDrop)&&DragPayload.Parse(e.Data) is not null)OnGlobalDrop("download:auto",e.Data,null);else{Import(e.Data);Dispatcher.BeginInvoke(ShowWheel,System.Windows.Threading.DispatcherPriority.Background);}}e.Handled=true;};
         PreviewKeyDown+=(_,e)=>{if(HandleShortcut(e.Key,Keyboard.Modifiers,Keyboard.FocusedElement as DependencyObject))e.Handled=true;};
         if(initial is not null)Add(initial);else Refresh();ShowLibrary(false);RenderLibrary();Loaded+=(_,_)=>Theme.Entrance(LibraryVisible?libraryPage:home);
         if(this.library.RecoveryNotice is {} notice)L10n.SetText(status,notice);
@@ -238,7 +238,7 @@ public sealed partial class MainWindow:Window
     {
         if(files.Count==0)return [];
         if(mode=="actions")return [new("share","Share","◉"),new("float","Float","▣"),new("copy","Copy","▱"),new("move","Move","↗"),new("copyPath","Copy Path","↪"),new("terminal","Terminal",">_")];
-        if(mode=="convert")return FeatureCatalog.Formats(files).Select(format=>new ToolChoice("convert:"+format,format.ToUpperInvariant(),"↗")).ToArray();
+        if(mode=="convert")return FeatureCatalog.Formats(files).Select(format=>new ToolChoice("convert:"+format,$"Convert to {format.ToUpperInvariant()}","↗")).ToArray();
         var tools=Choices().ToList();if(FeatureCatalog.Formats(files).Length>0)tools.Insert(0,new("convert","Convert","⇄"));return tools;
     }
     private static readonly string[] FileActionIds=["share","float","copy","move","copyPath","terminal"];
