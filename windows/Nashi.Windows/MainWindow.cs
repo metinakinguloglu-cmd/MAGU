@@ -295,10 +295,11 @@ public sealed partial class MainWindow:Window
         catch(Exception error){MessageBox.Show(this,L10n.Text(error.Message),L10n.Text("Couldn’t open this tool"),MessageBoxButton.OK,MessageBoxImage.Information);}
         finally{if(temporary is not null&&File.Exists(temporary))File.Delete(temporary);SetBusy(false);}
     }
-    private async Task RunAsync(Func<string,IProgress<OperationProgress>,CancellationToken,Task<IReadOnlyList<string>>> work,string label="Fresh copy",Action<OperationProgress>? externalProgress=null,Action<IReadOnlyList<string>>? completed=null,Action<Exception>? failed=null)
+    private async Task RunAsync(Func<string,IProgress<OperationProgress>,CancellationToken,Task<IReadOnlyList<string>>> work,string label="Fresh copy",Action<OperationProgress>? externalProgress=null,Action<IReadOnlyList<string>>? completed=null,Action<Exception>? failed=null,string? destinationOverride=null)
     {
         if(busy)return;var owner=webWindow?.IsActive==true?webWindow:this;string destination;
-        if(label=="Move"||preferences.Value.OutputMode=="ask"||(files.Count==0&&owner==this)){var folder=new OpenFolderDialog{Title=L10n.Text("Save new files to…"),InitialDirectory=Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)};if(folder.ShowDialog(owner)!=true)return;destination=folder.FolderName;}
+        if(destinationOverride is not null)destination=destinationOverride;
+        else if(label=="Move"||preferences.Value.OutputMode=="ask"||(files.Count==0&&owner==this)){var folder=new OpenFolderDialog{Title=L10n.Text("Save new files to…"),InitialDirectory=Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)};if(folder.ShowDialog(owner)!=true)return;destination=folder.FolderName;}
         else destination=owner==webWindow?preferences.Value.DownloadFolder:preferences.Value.OutputMode=="folder"&&!string.IsNullOrWhiteSpace(preferences.Value.OutputFolder)?preferences.Value.OutputFolder:Path.GetDirectoryName(files[0])!;
         SetBusy(true);using var cancellation=new CancellationTokenSource();var toast=new ToastWindow(owner,cancellation.Cancel);toast.Show();
         try{var outputs=await work(destination,new Progress<OperationProgress>(value=>{toast.Update(value);externalProgress?.Invoke(value);}),cancellation.Token);toast.Complete(outputs);Record(label,outputs);L10n.SetText(status,$"Saved {outputs.Count} new {(outputs.Count==1?"file":"files")}. Originals kept.");if(preferences.Value.RevealFinished&&outputs.Count>0)Reveal(outputs[0]);completed?.Invoke(outputs);}
@@ -316,7 +317,7 @@ public sealed partial class MainWindow:Window
                 var info=await web.InspectAsync(request.Url);string[] formats=info.AudioOnly?["mp3","m4a","wav","flac"]:["mp4","webm","mp3","m4a","wav","flac"];return new("inspect-result",request.Id,Title:info.Title,Heights:info.Heights,Formats:formats);
             }
             var kind=request.Kind switch{"mp4"=>"video","webm"=>"video:webm","mp3"=>"audio:mp3","m4a"=>"audio:m4a","wav"=>"audio:wav","flac"=>"audio:flac","thumbnail"=>"thumbnail",_=>throw new ArgumentException("Choose a supported media format.")};
-            IReadOnlyList<string>? outputs=null;Exception? failure=null;await RunAsync((destination,p,t)=>web.DownloadAsync(request.Url,kind,destination,p,t,request.MaximumHeight),"Download "+kind,value=>progress.Report(value),value=>outputs=value,error=>failure=error);
+            IReadOnlyList<string>? outputs=null;Exception? failure=null;await RunAsync((destination,p,t)=>web.DownloadAsync(request.Url,kind,destination,p,t,request.MaximumHeight),"Download "+kind,value=>progress.Report(value),value=>outputs=value,error=>failure=error,destinationOverride:preferences.Value.DownloadFolder);
             return failure is null?new("complete",request.Id,Outputs:outputs?.ToArray()):new("error",request.Id,false,failure.Message);
         }
         catch(Exception error){return new("error",request.Id,false,error.Message);}
